@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="gp_aggressive_cleaner" title="Aggressive Spam Cleaner" version_string="1.0" version_id="0" url="" install_callback_class="SpamCleaner_Addon" install_callback_method="install" uninstall_callback_class="SpamCleaner_Addon" uninstall_callback_method="uninstall">
+  <admin_navigation>
+    <navigation navigation_id="aggressiveCleaner" parent_navigation_id="toolsGroups" display_order="200" link="aggressive-cleaner" admin_permission_id="user" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="aggressive_cleaner_add"><![CDATA[<xen:title>Add Users to Spam Cleaner Queue</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink aggressive-cleaner}">Aggressive Spam Cleaner</xen:breadcrumb>
+</xen:navigation>
+
+<xen:form action="{xen:adminlink 'aggressive-cleaner/save'}">
+
+	<xen:textboxunit name="user_ids" value="" label="User Ids:" hint="List of User Ids" explain="Enter one User Id per row" rows="10" inputclass="Elastic">
+	</xen:textboxunit>
+
+	<xen:submitunit save="Add Users to Queue">
+	</xen:submitunit>
+
+</xen:form>]]></template>
+    <template title="aggressive_cleaner_cleaned"><![CDATA[<xen:title>Spam Cleanup Results</xen:title>
+<xen:h1>Spam Cleanup Results</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink aggressive-cleaner}">Aggressive Spam Cleaner</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="filter_list.css" />
+
+<p>Spam Cleanup was successfully performed on the following users:</p>
+
+<div class="section">
+	<ol class="FilterList">
+		<xen:foreach loop="$users" value="$user">
+		<li class="listItem primaryContent">
+			<h4><a href="{xen:adminlink 'users/edit', $user}">
+				<em>{$user.username}</em>
+				<dfn>{$user.email}</dfn>
+			</a></h4>
+		</li>
+		</xen:foreach>
+	</ol>	
+</div>]]></template>
+    <template title="aggressive_cleaner_confirm"><![CDATA[<xen:title>Confirm Spam Cleanup</xen:title>
+<xen:h1>Confirm Spam Cleanup</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink aggressive-cleaner}">Aggressive Spam Cleaner</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'aggressive-cleaner/clean'}" class="deleteConfirmForm formOverlay">
+
+	<p>Please confirm that you want to clean up the following users:</p>
+	<xen:foreach loop="$users" value="$user">
+		<strong><a href="{xen:adminlink 'users/edit', $user}">{$user.username}</a></strong>
+	</xen:foreach>
+
+	<xen:submitunit save="Clean Up" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+</xen:form>]]></template>
+    <template title="aggressive_cleaner_delete"><![CDATA[<xen:title>Confirm Removal of User from Queue: {$user.username}</xen:title>
+<xen:h1>Confirm Removal of User from Queue</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink aggressive-cleaner}">Aggressive Spam Cleaner</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'aggressive-cleaner/delete', $user}" class="deleteConfirmForm formOverlay">
+
+	<p>Please confirm that you want to remove the following user from the spam cleaner queue:</p>
+	<strong><a href="{xen:adminlink 'users/edit', $user}">{$user.username}</a></strong>
+
+	<xen:submitunit save="Remove User from Queue" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+</xen:form>]]></template>
+    <template title="aggressive_cleaner_list"><![CDATA[<xen:title>Aggressive Spam Cleaner Queue</xen:title>
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'aggressive-cleaner/clean'}" class="button">Obliterate</a>
+	<a href="{xen:adminlink 'aggressive-cleaner/add'}" class="button">+ Add Users</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+
+<div class="section">
+	<xen:if is="{$users}">
+		<h2 class="subHeading">
+			{xen:phrase users}
+		</h2>
+
+		<ol class="FilterList">
+			<xen:include template="aggressive_cleaner_list_items" />
+		</ol>
+
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $users}</span>', 'total={xen:number $totalUsers}'}</p>
+	<xen:else />
+		<div class="noResults">No users to be obliterated!</div>
+	</xen:if>
+</div>]]></template>
+    <template title="aggressive_cleaner_list_items"><![CDATA[<xen:foreach loop="$users" value="$user">
+	<xen:listitem
+		id="{$user.user_id}"
+		label="{$user.username}"
+		href="{xen:adminlink 'users/edit', $user}"
+		snippet="{$user.email}"
+		delete="{xen:adminlink aggressive-cleaner/delete, $user}">
+		<xen:beforelabel>
+			<img src="{xen:helper avatar, $user, s}" alt="" class="listAvatar" />
+		</xen:beforelabel>
+		<xen:html>
+			<xen:if is="{$user.is_banned}">
+				<a href="{xen:adminlink banning/users/lift, $user}" class="secondaryContent OverlayTrigger liftCtrl">{xen:phrase lift_ban}...</a>
+			<xen:else />
+				<a href="{xen:adminlink banning/users/add, $user}" class="secondaryContent OverlayTrigger banCtrl">{xen:phrase ban_user}...</a>
+			</xen:if>
+		</xen:html>
+	</xen:listitem>
+</xen:foreach>
+<xen:if is="{$filterMore}">
+	<li class="listNote">{xen:phrase more_records_matching_filter_more_specific}</li>
+</xen:if>]]></template>
+  </admin_templates>
+  <code_events/>
+  <code_event_listeners/>
+  <cron/>
+  <email_templates/>
+  <optiongroups>
+    <option option_id="aggressiveSpamThreshold" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>200</default_value>
+      <edit_format_params>min=0
+step=100</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="spam" display_order="610"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="admin_navigation_aggressiveCleaner" version_id="0" version_string="1.0"><![CDATA[Aggressive Cleaner]]></phrase>
+    <phrase title="option_aggressiveSpamThreshold" version_id="0" version_string="1.0"><![CDATA[Aggressive Spam Messages Threshold]]></phrase>
+    <phrase title="option_aggressiveSpamThreshold_explain" version_id="0" version_string="1.0"><![CDATA[Maximum amount of messages to clean in a single batch. If all users are above this threshold value, cleanup is performed on a single user at a time.]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="aggressive-cleaner" class="SpamCleaner_Route_PrefixAdmin_AggressiveCleaner" build_link="data_only"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates/>
+  <bb_code_media_sites/>
+</addon>
