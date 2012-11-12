@@ -35,7 +35,7 @@ class SpamCleaner_ControllerAdmin_AggressiveCleaner extends XenForo_ControllerAd
 		$this->_assertPostOnly();
 
 		$userIds = $this->_input->filterSingle('user_ids', XenForo_Input::STRING);
-		$userIds = explode('\n', $userIds);
+		$userIds = explode("\n", $userIds);
 
 		$model = $this->_getAggressiveCleanerModel();
 		$model->addUsers($userIds);
