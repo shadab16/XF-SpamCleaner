@@ -2,12 +2,17 @@
 
 class SpamCleaner_Model_AggressiveCleaner extends XenForo_Model
 {
-	public function getUsers()
+	public function getUserIds()
 	{
-		$userIds = $this->_getDb()->fetchCol('
+		return $this->_getDb()->fetchCol('
 			SELECT user_id
 			FROM gp_aggressive_cleaner_queue
 		');
+	}
+
+	public function getUsers()
+	{
+		$userIds = $this->getUserIds();
 		$fetchOptions = array(
 			'order' => 'message_count',
 			'direction' => 'asc'
@@ -40,6 +45,9 @@ class SpamCleaner_Model_AggressiveCleaner extends XenForo_Model
 	{
 		$users = $this->_getUserModel()->getUsersByIds($userIds);
 		$validUserIds = array_keys($users);
+		$existingUserIds = $this->getUserIds();
+
+		$validUserIds = array_diff($validUserIds, $existingUserIds);
 
 		foreach ($validUserIds as $userId)
 		{
